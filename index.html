@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LearnLangWords</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+        <div class="logo">LearnLangWords</div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            Automation Ready
+        </div>
+    </header>
+
+
+    <main class="container">
+
+        <section class="hero">
+
+            <div>
+                <p class="eyebrow">DAILY VOCABULARY</p>
+
+                <h1>
+                    Learn a little.<br>
+                    Every single day.
+                </h1>
+
+                <p class="hero-text">
+                    Personalize your vocabulary delivery and build your
+                    language skills one word at a time.
+                </p>
+            </div>
+
+            <div class="hero-icon">
+                Aa
+            </div>
+
+        </section>
+
+
+        <section class="settings-section">
+
+            <div class="section-heading">
+                <p class="eyebrow">YOUR SETTINGS</p>
+                <h2>Vocabulary preferences</h2>
+            </div>
+
+
+            <div class="settings-card">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Enter your email"
+                    >
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="language">
+                            Language
+                        </label>
+
+                        <select id="language">
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="words">
+                            Words per day
+                        </label>
+
+                        <select id="words">
+                            <option value="1">1 word</option>
+                            <option value="2">2 words</option>
+                            <option value="3">3 words</option>
+                            <option value="5">5 words</option>
+                            <option value="10">10 words</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="button-row">
+
+                    <button
+                        class="secondary-button"
+                        id="saveButton"
+                    >
+                        Save Settings
+                    </button>
+
+
+                    <button
+                        class="primary-button"
+                        id="runButton"
+                    >
+                        Run Now →
+                    </button>
+
+                </div>
+
+
+                <p
+                    class="message"
+                    id="message"
+                ></p>
+
+            </div>
+
+        </section>
+
+
+        <section class="overview">
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    WORDS LEARNED
+                </span>
+
+                <strong id="wordsLearned">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    WORDS TODAY
+                </span>
+
+                <strong id="wordsToday">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    LAST RUN
+                </span>
+
+                <strong id="lastRun">
+                    —
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <section class="today-section">
+
+            <div class="section-heading">
+
+                <p class="eyebrow">
+                    TODAY
+                </p>
+
+                <h2>
+                    Today's vocabulary
+                </h2>
+
+            </div>
+
+
+            <div
+                class="empty-state"
+                id="todayWords"
+            >
+
+                <div class="empty-icon">
+                    Aa
+                </div>
+
+                <h3>
+                    No words yet
+                </h3>
+
+                <p>
+                    Run the vocabulary generator to see today's words here.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="history-section">
+
+            <div class="section-heading">
+
+                <p class="eyebrow">
+                    HISTORY
+                </p>
+
+                <h2>
+                    Previous vocabulary
+                </h2>
+
+            </div>
+
+
+            <div
+                class="history-list"
+                id="historyList"
+            >
+
+                <div class="history-empty">
+                    Your generated words will appear here.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            LearnLangWords · Personal vocabulary automation
+        </p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
+```

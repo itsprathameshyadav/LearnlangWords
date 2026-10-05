@@ -40,6 +40,7 @@ gemini = genai.Client(
     api_key=gemini_key
 )
 
+
 supabase = create_client(
     supabase_url,
     supabase_key
@@ -67,6 +68,11 @@ if not user_settings:
 
 language = user_settings["language"]
 
+learn_in = user_settings.get(
+    "learn_in",
+    "English"
+)
+
 words_per_day = int(
     user_settings["words_per_day"]
 )
@@ -89,6 +95,7 @@ india_timezone = ZoneInfo(
     "Asia/Kolkata"
 )
 
+
 now = datetime.now(
     india_timezone
 )
@@ -104,8 +111,13 @@ print(
 )
 
 print(
-    "Language:",
+    "Learn:",
     language
+)
+
+print(
+    "Learn in:",
+    learn_in
 )
 
 print(
@@ -161,6 +173,7 @@ today_words_response = (
     .table("vocabulary")
     .select("*")
     .eq("language", language)
+    .eq("learn_in", learn_in)
     .gte(
         "generated_at",
         today_start_iso
@@ -271,6 +284,7 @@ else:
         .table("vocabulary")
         .select("word")
         .eq("language", language)
+        .eq("learn_in", learn_in)
         .order(
             "generated_at",
             desc=True
@@ -309,27 +323,57 @@ Do not use any of these recently used words:
         prompt = f"""
 Generate one useful vocabulary word in {language}.
 
-The word should be suitable for a student
-who wants to improve their vocabulary.
+The learner understands {learn_in}.
 
-Prefer common or moderately advanced words
-that are useful in everyday communication.
+The vocabulary word must be in {language}.
+
+Give all information needed for a learner whose
+explanation language is {learn_in}.
+
+Requirements:
+
+1. Word:
+   Give one useful vocabulary word in {language}.
+
+2. Pronunciation:
+   Give an easy-to-read pronunciation of the word
+   suitable for a person who understands {learn_in}.
+   Use the writing system of {learn_in} when it makes
+   the pronunciation easier for the learner.
+   Otherwise use a clear Latin transliteration.
+
+3. Meaning:
+   Give the simple meaning of the word in {learn_in}.
+
+4. Example:
+   Give one natural example sentence using the word
+   in {language}.
+
+5. Example Pronunciation:
+   Give an easy-to-read pronunciation of the complete
+   example sentence suitable for a person who understands
+   {learn_in}.
+   Use the writing system of {learn_in} when appropriate.
+
+6. Example Meaning:
+   Translate the example sentence into {learn_in}.
+
+Prefer common or moderately advanced words useful
+in everyday communication.
+
 Avoid highly technical, scientific, obscure,
 or extremely rare words.
-
-Give:
-
-1. The word
-2. A simple and accurate meaning in {language}
-3. One natural example sentence in {language}
 
 {avoid_text}
 
 Format your response exactly like this:
 
 Word: <word>
+Pronunciation: <pronunciation>
 Meaning: <meaning>
 Example: <example sentence>
+Example Pronunciation: <example pronunciation>
+Example Meaning: <example meaning>
 """
 
 
@@ -350,8 +394,11 @@ Example: <example sentence>
 
 
         word = ""
+        pronunciation = ""
         meaning = ""
         example = ""
+        example_pronunciation = ""
+        example_meaning = ""
 
 
         for line in lines:
@@ -368,11 +415,46 @@ Example: <example sentence>
                 )
 
 
+            elif line.startswith("Pronunciation:"):
+
+                pronunciation = (
+                    line
+                    .replace("Pronunciation:", "", 1)
+                    .strip()
+                )
+
+
             elif line.startswith("Meaning:"):
 
                 meaning = (
                     line
                     .replace("Meaning:", "", 1)
+                    .strip()
+                )
+
+
+            elif line.startswith("Example Pronunciation:"):
+
+                example_pronunciation = (
+                    line
+                    .replace(
+                        "Example Pronunciation:",
+                        "",
+                        1
+                    )
+                    .strip()
+                )
+
+
+            elif line.startswith("Example Meaning:"):
+
+                example_meaning = (
+                    line
+                    .replace(
+                        "Example Meaning:",
+                        "",
+                        1
+                    )
                     .strip()
                 )
 
@@ -386,10 +468,17 @@ Example: <example sentence>
                 )
 
 
-        if not word or not meaning or not example:
+        if (
+            not word
+            or not pronunciation
+            or not meaning
+            or not example
+            or not example_pronunciation
+            or not example_meaning
+        ):
 
             raise Exception(
-                "Could not extract vocabulary information."
+                "Could not extract complete vocabulary information."
             )
 
 
@@ -398,9 +487,13 @@ Example: <example sentence>
             .table("vocabulary")
             .insert({
                 "word": word,
+                "pronunciation": pronunciation,
                 "meaning": meaning,
                 "example": example,
+                "example_pronunciation": example_pronunciation,
+                "example_meaning": example_meaning,
                 "language": language,
+                "learn_in": learn_in,
                 "email_sent": False
             })
             .execute()
@@ -413,6 +506,7 @@ Example: <example sentence>
 
 
         new_word = insert_response.data[0]
+
 
         unsent_words.insert(
             0,
@@ -439,9 +533,24 @@ for index, item in enumerate(
 
     word = item["word"]
 
+    pronunciation = item.get(
+        "pronunciation",
+        ""
+    )
+
     meaning = item["meaning"]
 
     example = item["example"]
+
+    example_pronunciation = item.get(
+        "example_pronunciation",
+        ""
+    )
+
+    example_meaning = item.get(
+        "example_meaning",
+        ""
+    )
 
 
     if (
@@ -459,19 +568,45 @@ LearnLangWords has started successfully!
 
 Your daily vocabulary automation is now active.
 
-Language: {language}
-Words per day: {words_per_day}
-Daily learning window: 8:00 AM - 8:00 PM IST
+Learn:
+{language}
+
+Learn in:
+{learn_in}
+
+Words per day:
+{words_per_day}
+
+Daily learning window:
+8:00 AM - 8:00 PM IST
+
 
 Your very first bonus word for today is:
 
+
+Word:
 {word}
+
+
+Pronunciation:
+{pronunciation}
+
 
 Meaning:
 {meaning}
 
+
 Example:
 {example}
+
+
+Example Pronunciation:
+{example_pronunciation}
+
+
+Example Meaning:
+{example_meaning}
+
 
 From now on, LearnLangWords will continue
 sending your vocabulary words throughout the day.
@@ -490,16 +625,40 @@ Keep learning, one word at a time.
         email_body = f"""
 LearnLangWords
 
+
+Learn:
+{language}
+
+Learn in:
+{learn_in}
+
+
 Your vocabulary word for today:
+
 
 Word:
 {word}
 
+
+Pronunciation:
+{pronunciation}
+
+
 Meaning:
 {meaning}
 
+
 Example:
 {example}
+
+
+Example Pronunciation:
+{example_pronunciation}
+
+
+Example Meaning:
+{example_meaning}
+
 
 Keep learning, one word at a time.
 """

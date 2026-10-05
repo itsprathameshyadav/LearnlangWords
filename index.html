@@ -6,125 +6,293 @@
 
     <title>LearnLangWords</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <header class="navbar">
+<div class="app">
 
-        <div class="logo">
-            LearnLangWords
-        </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-        <div class="status">
-            <span class="status-dot"></span>
-            Automation Ready
-        </div>
-
-    </header>
-
-
-    <main class="container">
-
-        <section class="hero">
+        <div class="brand">
+            <div class="brand-icon">L</div>
 
             <div>
+                <h2>LearnLang</h2>
+                <span>Words</span>
+            </div>
+        </div>
 
-                <p class="eyebrow">
-                    DAILY VOCABULARY
-                </p>
+        <nav>
+            <button class="nav-item active" data-section="dashboard">
+                <span class="nav-icon">⌂</span>
+                Dashboard
+            </button>
 
-                <h1>
-                    Learn a little.<br>
-                    Every single day.
-                </h1>
+            <button class="nav-item" data-section="vocabulary">
+                <span class="nav-icon">▤</span>
+                Vocabulary
+            </button>
 
-                <p class="hero-text">
-                    Personalize your vocabulary delivery and build your
-                    language skills one word at a time.
-                </p>
+            <button class="nav-item" data-section="settings">
+                <span class="nav-icon">⚙</span>
+                Settings
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="automation-status">
+                <div class="status-dot"></div>
+
+                <div>
+                    <strong>Automation</strong>
+                    <span>Running automatically</span>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div>
+                <p class="small-label">LANGUAGE LEARNING</p>
+                <h1 id="page-title">Dashboard</h1>
+            </div>
+
+            <div class="learner-selector">
+
+                <span class="selector-label">Learner</span>
+
+                <select id="learner-select">
+                    <option value="">Loading...</option>
+                </select>
+
+                <button id="add-learner-btn" class="add-learner-btn">
+                    +
+                </button>
 
             </div>
 
-            <div class="hero-icon">
-                Aa
+        </header>
+
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard-section" class="page-section active">
+
+            <div class="hero">
+
+                <div class="hero-content">
+
+                    <p class="hero-label">YOUR DAILY JOURNEY</p>
+
+                    <h2>
+                        Keep learning.<br>
+                        <span>One word at a time.</span>
+                    </h2>
+
+                    <p class="hero-description">
+                        Your vocabulary is automatically delivered throughout the day.
+                    </p>
+
+                    <div class="language-flow">
+
+                        <div class="language-pill">
+                            <span>Learning</span>
+                            <strong id="hero-language">—</strong>
+                        </div>
+
+                        <div class="arrow">→</div>
+
+                        <div class="language-pill">
+                            <span>Learn in</span>
+                            <strong id="hero-learn-in">—</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="hero-decoration">
+                    <div class="orbit orbit-one"></div>
+                    <div class="orbit orbit-two"></div>
+                    <div class="globe">文</div>
+                </div>
+
+            </div>
+
+
+            <!-- STATS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Words Learned</span>
+                        <div class="stat-icon purple">✦</div>
+                    </div>
+
+                    <strong id="words-learned">0</strong>
+
+                    <p>Total vocabulary</p>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Today</span>
+                        <div class="stat-icon orange">◷</div>
+                    </div>
+
+                    <strong id="words-today">0</strong>
+
+                    <p>Words learned today</p>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Daily Goal</span>
+                        <div class="stat-icon blue">◎</div>
+                    </div>
+
+                    <strong id="daily-goal">0</strong>
+
+                    <p>Words per day</p>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+                        <span>Status</span>
+                        <div class="stat-icon green">✓</div>
+                    </div>
+
+                    <strong class="status-text">Active</strong>
+
+                    <p id="last-run">Waiting for automation</p>
+
+                </div>
+
+            </div>
+
+
+            <!-- TODAY -->
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="small-label">TODAY</p>
+                    <h2>Today's Vocabulary</h2>
+                </div>
+
+                <span id="today-count" class="count-badge">0 words</span>
+
+            </div>
+
+            <div id="today-vocabulary" class="vocabulary-grid">
+                <div class="empty-state">
+                    <div class="empty-icon">✦</div>
+                    <h3>No words yet</h3>
+                    <p>Your daily vocabulary will appear here.</p>
+                </div>
             </div>
 
         </section>
 
 
-        <section class="settings-section">
+        <!-- VOCABULARY SECTION -->
+
+        <section id="vocabulary-section" class="page-section">
 
             <div class="section-heading">
 
-                <p class="eyebrow">
-                    YOUR SETTINGS
-                </p>
+                <div>
+                    <p class="small-label">YOUR LIBRARY</p>
+                    <h2>Vocabulary History</h2>
+                </div>
 
-                <h2>
-                    Vocabulary preferences
-                </h2>
+                <span id="history-count" class="count-badge">0 words</span>
+
+            </div>
+
+            <div id="previous-vocabulary" class="vocabulary-grid">
+            </div>
+
+        </section>
+
+
+        <!-- SETTINGS SECTION -->
+
+        <section id="settings-section" class="page-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="small-label">PERSONALISE</p>
+                    <h2>Learning Settings</h2>
+                    <p>Configure how LearnLangWords teaches you.</p>
+                </div>
 
             </div>
 
 
             <div class="settings-card">
 
-                <div class="form-group">
+                <div class="settings-header">
+                    <div class="settings-icon">⚙</div>
 
-                    <label for="email">
-                        Email address
-                    </label>
-
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Enter your email"
-                    >
-
+                    <div>
+                        <h3>Learner Preferences</h3>
+                        <p>These settings control your daily vocabulary.</p>
+                    </div>
                 </div>
 
 
-                <div class="form-row">
+                <div class="form-grid">
+
+                    <div class="form-group full">
+                        <label>Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="learner@example.com"
+                        >
+                    </div>
+
 
                     <div class="form-group">
 
-                        <label for="language">
-                            Language
-                        </label>
+                        <label>Learn</label>
 
                         <select id="language">
 
-                            <option value="English">
-                                English
-                            </option>
-
-                            <option value="Spanish">
-                                Spanish
-                            </option>
-
-                            <option value="French">
-                                French
-                            </option>
-
-                            <option value="German">
-                                German
-                            </option>
-
-                            <option value="Italian">
-                                Italian
-                            </option>
-
-                            <option value="Portuguese">
-                                Portuguese
-                            </option>
-
-                            <option value="Japanese">
-                                Japanese
-                            </option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Japanese">Japanese</option>
 
                         </select>
 
@@ -133,31 +301,40 @@
 
                     <div class="form-group">
 
-                        <label for="words">
-                            Words per day
-                        </label>
+                        <label>Learn in</label>
 
-                        <select id="words">
+                        <select id="learn-in">
 
-                            <option value="1">
-                                1 word
-                            </option>
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Japanese">Japanese</option>
 
-                            <option value="2">
-                                2 words
-                            </option>
+                        </select>
 
-                            <option value="3">
-                                3 words
-                            </option>
+                    </div>
 
-                            <option value="5">
-                                5 words
-                            </option>
 
-                            <option value="10">
-                                10 words
-                            </option>
+                    <div class="form-group">
+
+                        <label>Words per day</label>
+
+                        <select id="words-per-day">
+
+                            <option value="1">1 word</option>
+                            <option value="2">2 words</option>
+                            <option value="3">3 words</option>
+                            <option value="4">4 words</option>
+                            <option value="5">5 words</option>
+                            <option value="6">6 words</option>
+                            <option value="7">7 words</option>
+                            <option value="8">8 words</option>
+                            <option value="9">9 words</option>
+                            <option value="10">10 words</option>
 
                         </select>
 
@@ -166,130 +343,15 @@
                 </div>
 
 
-                <div class="button-row">
+                <div class="settings-footer">
 
-                    <button
-                        class="secondary-button"
-                        id="saveButton"
-                    >
+                    <p id="save-message"></p>
+
+                    <button id="save-settings" class="primary-btn">
                         Save Settings
+                        <span>→</span>
                     </button>
 
-                </div>
-
-
-                <p
-                    class="message"
-                    id="message"
-                ></p>
-
-            </div>
-
-        </section>
-
-
-        <section class="overview">
-
-            <div class="stat-card">
-
-                <span class="stat-label">
-                    WORDS LEARNED
-                </span>
-
-                <strong id="wordsLearned">
-                    0
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span class="stat-label">
-                    WORDS TODAY
-                </span>
-
-                <strong id="wordsToday">
-                    0
-                </strong>
-
-            </div>
-
-
-            <div class="stat-card">
-
-                <span class="stat-label">
-                    LAST RUN
-                </span>
-
-                <strong id="lastRun">
-                    —
-                </strong>
-
-            </div>
-
-        </section>
-
-
-        <section class="today-section">
-
-            <div class="section-heading">
-
-                <p class="eyebrow">
-                    TODAY
-                </p>
-
-                <h2>
-                    Today's vocabulary
-                </h2>
-
-            </div>
-
-
-            <div
-                class="empty-state"
-                id="todayWords"
-            >
-
-                <div class="empty-icon">
-                    Aa
-                </div>
-
-                <h3>
-                    No words yet
-                </h3>
-
-                <p>
-                    Your generated words will appear here.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <section class="history-section">
-
-            <div class="section-heading">
-
-                <p class="eyebrow">
-                    HISTORY
-                </p>
-
-                <h2>
-                    Previous vocabulary
-                </h2>
-
-            </div>
-
-
-            <div
-                class="history-list"
-                id="historyList"
-            >
-
-                <div class="history-empty">
-                    Your generated words will appear here.
                 </div>
 
             </div>
@@ -298,17 +360,51 @@
 
     </main>
 
+</div>
 
-    <footer>
+
+<!-- ADD LEARNER MODAL -->
+
+<div id="learner-modal" class="modal">
+
+    <div class="modal-card">
+
+        <button id="close-modal" class="close-modal">×</button>
+
+        <div class="modal-icon">+</div>
+
+        <h2>Add Learner</h2>
 
         <p>
-            LearnLangWords · Personal vocabulary automation
+            Create a separate vocabulary profile with its own learning settings.
         </p>
 
-    </footer>
+        <div class="form-group">
+
+            <label>Learner Email</label>
+
+            <input
+                type="email"
+                id="new-learner-email"
+                placeholder="learner@example.com"
+            >
+
+        </div>
+
+        <button id="create-learner" class="primary-btn modal-btn">
+            Create Learner
+            <span>→</span>
+        </button>
+
+        <p id="learner-message"></p>
+
+    </div>
+
+</div>
 
 
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 
 </body>
 </html>

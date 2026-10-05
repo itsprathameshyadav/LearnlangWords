@@ -36,7 +36,9 @@ if not sender_password:
     raise Exception("SENDER_APP_PASSWORD is missing.")
 
 
-gemini = genai.Client(api_key=gemini_key)
+gemini = genai.Client(
+    api_key=gemini_key
+)
 
 supabase = create_client(
     supabase_url,
@@ -58,12 +60,19 @@ user_settings = settings_response.data
 
 
 if not user_settings:
-    raise Exception("Settings were not found in Supabase.")
+    raise Exception(
+        "Settings were not found in Supabase."
+    )
 
 
 language = user_settings["language"]
-words_per_day = int(user_settings["words_per_day"])
+
+words_per_day = int(
+    user_settings["words_per_day"]
+)
+
 recipient_email = user_settings["email"]
+
 automation_started = user_settings.get(
     "automation_started",
     False
@@ -71,12 +80,18 @@ automation_started = user_settings.get(
 
 
 if not recipient_email:
-    raise Exception("Recipient email is missing in Supabase.")
+    raise Exception(
+        "Recipient email is missing in Supabase."
+    )
 
 
-india_timezone = ZoneInfo("Asia/Kolkata")
+india_timezone = ZoneInfo(
+    "Asia/Kolkata"
+)
 
-now = datetime.now(india_timezone)
+now = datetime.now(
+    india_timezone
+)
 
 
 start_time = time(8, 0)
@@ -105,21 +120,29 @@ print(
 
 
 if words_per_day <= 0:
-    print("No words configured.")
+
+    print(
+        "No words configured."
+    )
+
     exit()
 
 
 if now.time() < start_time:
+
     print(
         "Daily vocabulary window has not started yet."
     )
+
     exit()
 
 
 if now.time() > end_time:
+
     print(
         "Daily vocabulary window has ended."
     )
+
     exit()
 
 
@@ -158,7 +181,9 @@ else:
         words_due = words_per_day
 
 
-today_start_iso = today_start.isoformat()
+today_start_iso = (
+    today_start.isoformat()
+)
 
 
 today_words_response = (
@@ -172,15 +197,20 @@ today_words_response = (
     )
     .order(
         "generated_at",
-        ascending=False
+        desc=True
     )
     .execute()
 )
 
 
-today_words = today_words_response.data
+today_words = (
+    today_words_response.data
+)
 
-words_sent_today = len(today_words)
+
+words_sent_today = len(
+    today_words
+)
 
 
 print(
@@ -216,7 +246,7 @@ recent_words_response = (
     .eq("language", language)
     .order(
         "generated_at",
-        ascending=False
+        desc=True
     )
     .limit(20)
     .execute()
@@ -257,6 +287,11 @@ Generate one useful vocabulary word in {language}.
 
 The word should be suitable for a student
 who wants to improve their vocabulary.
+
+Prefer common or moderately advanced words
+that are useful in everyday communication.
+Avoid highly technical, scientific, obscure,
+or extremely rare words.
 
 Give:
 
@@ -337,12 +372,10 @@ Example: <example sentence>
     supabase.table(
         "vocabulary"
     ).insert({
-
         "word": word,
         "meaning": meaning,
         "example": example,
         "language": language
-
     }).execute()
 
 
@@ -358,10 +391,8 @@ Example: <example sentence>
     })
 
 
-    recent_words.append(word)
-
-    recent_words_text = ", ".join(
-        recent_words
+    recent_words.append(
+        word
     )
 
 
@@ -377,11 +408,16 @@ for index, item in enumerate(
 ):
 
     word = item["word"]
+
     meaning = item["meaning"]
+
     example = item["example"]
 
 
-    if not automation_started and index == 0:
+    if (
+        not automation_started
+        and index == 0
+    ):
 
         email_subject = (
             "LearnLangWords has started 🎉"
@@ -509,9 +545,7 @@ Keep learning, one word at a time.
         supabase.table(
             "settings"
         ).update({
-
             "automation_started": True
-
         }).eq(
             "id",
             1

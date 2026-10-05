@@ -1,24 +1,24 @@
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+const SUPABASE_URL="https://hriymqcbdsbzerucgvrx.supabase.co"
+const SUPABASE_KEY="sb_publishable_g-wbrT-Hvj3BTl2PNWLw_A_yCwGREQl"
 
 const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
-
 const saveButton = document.getElementById("saveButton");
-const runButton = document.getElementById("runButton");
 const message = document.getElementById("message");
 
 
 function getIndiaDate() {
+
     return new Intl.DateTimeFormat("en-CA", {
         timeZone: "Asia/Kolkata",
         year: "numeric",
         month: "2-digit",
         day: "2-digit"
     }).format(new Date());
+
 }
 
 
@@ -31,6 +31,7 @@ function formatTime(dateString) {
         hour: "2-digit",
         minute: "2-digit"
     }).format(date);
+
 }
 
 
@@ -44,6 +45,21 @@ function formatDate(dateString) {
         month: "short",
         year: "numeric"
     }).format(date);
+
+}
+
+
+function formatIndiaDate(dateString) {
+
+    const date = new Date(dateString);
+
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(date);
+
 }
 
 
@@ -64,17 +80,19 @@ async function loadSettings() {
             "Unable to load settings.";
 
         return;
+
     }
 
 
     document.getElementById("email").value =
-        data.email;
+        data.email || "";
 
     document.getElementById("language").value =
-        data.language;
+        data.language || "English";
 
     document.getElementById("words").value =
-        data.words_per_day;
+        data.words_per_day || 1;
+
 }
 
 
@@ -93,6 +111,7 @@ async function loadVocabulary() {
         console.error(error);
 
         return;
+
     }
 
 
@@ -131,7 +150,9 @@ async function loadVocabulary() {
     if (data.length > 0) {
 
         lastRun.textContent =
-            formatTime(data[0].generated_at);
+            formatTime(
+                data[0].generated_at
+            );
 
     }
 
@@ -139,19 +160,7 @@ async function loadVocabulary() {
     displayToday(todayData);
 
     displayHistory(data);
-}
 
-
-function formatIndiaDate(dateString) {
-
-    const date = new Date(dateString);
-
-    return new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Kolkata",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    }).format(date);
 }
 
 
@@ -174,6 +183,7 @@ function displayToday(data) {
         `;
 
         return;
+
     }
 
 
@@ -226,7 +236,9 @@ function displayToday(data) {
 
 
         container.appendChild(card);
+
     });
+
 }
 
 
@@ -245,6 +257,7 @@ function displayHistory(data) {
         `;
 
         return;
+
     }
 
 
@@ -281,7 +294,9 @@ function displayHistory(data) {
 
 
         container.appendChild(row);
+
     });
+
 }
 
 
@@ -297,16 +312,12 @@ saveButton.addEventListener(
 
 
         const language =
-            document
-                .getElementById("language")
-                .value;
+            document.getElementById("language").value;
 
 
         const words =
             parseInt(
-                document
-                    .getElementById("words")
-                    .value
+                document.getElementById("words").value
             );
 
 
@@ -316,10 +327,22 @@ saveButton.addEventListener(
                 "Please enter your email address.";
 
             return;
+
+        }
+
+
+        if (!email.includes("@")) {
+
+            message.textContent =
+                "Please enter a valid email address.";
+
+            return;
+
         }
 
 
         saveButton.disabled = true;
+
 
         message.textContent =
             "Saving settings...";
@@ -347,19 +370,15 @@ saveButton.addEventListener(
                 "Failed to save settings.";
 
             return;
+
         }
 
 
         message.textContent =
             "Settings saved successfully.";
+
     }
 );
-
-
-runButton.disabled = true;
-
-runButton.textContent =
-    "Run Now (Coming Soon)";
 
 
 loadSettings();

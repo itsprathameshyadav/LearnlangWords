@@ -313,23 +313,8 @@ function updateAutomationStatus() {
             "status-dot"
         );
 
-    const lastRun =
-        document.getElementById(
-            "automation-last-run"
-        );
 
-    const lastWord =
-        document.getElementById(
-            "last-word"
-        );
-
-
-    if (
-        !statusText ||
-        !statusDot ||
-        !lastRun ||
-        !lastWord
-    ) {
+    if (!statusText || !statusDot) {
         return;
     }
 
@@ -364,31 +349,6 @@ function updateAutomationStatus() {
         statusDot.classList.add(
             "waiting"
         );
-    }
-
-
-    if (vocabulary.length > 0) {
-
-        const latestWord =
-            vocabulary[0];
-
-
-        lastWord.textContent =
-            latestWord.word || "None";
-
-
-        lastRun.textContent =
-            formatDate(
-                latestWord.generated_at
-            );
-
-    } else {
-
-        lastWord.textContent =
-            "None";
-
-        lastRun.textContent =
-            "Never";
     }
 }
 

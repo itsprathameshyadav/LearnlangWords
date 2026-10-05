@@ -149,18 +149,16 @@ if now.time() < start_time:
     exit()
 
 
-if now.time() > end_time:
-
-    print(
-        "Daily vocabulary window has ended."
-    )
-
-    exit()
-
-
 today_start = datetime.combine(
     now.date(),
     start_time,
+    tzinfo=india_timezone
+)
+
+
+today_end = datetime.combine(
+    now.date(),
+    end_time,
     tzinfo=india_timezone
 )
 
@@ -187,7 +185,7 @@ today_words_response = (
 
 
 today_words = (
-    today_words_response.data
+    today_words_response.data or []
 )
 
 
@@ -229,11 +227,22 @@ if len(unsent_words) > 0:
 
 else:
 
-    total_seconds = (
-        now - today_start
-    ).total_seconds()
+    if now >= today_end:
 
-    window_seconds = 12 * 60 * 60
+        elapsed_seconds = (
+            today_end - today_start
+        ).total_seconds()
+
+    else:
+
+        elapsed_seconds = (
+            now - today_start
+        ).total_seconds()
+
+
+    window_seconds = (
+        12 * 60 * 60
+    )
 
 
     if words_per_day == 1:
@@ -243,7 +252,7 @@ else:
     else:
 
         progress = (
-            total_seconds /
+            elapsed_seconds /
             window_seconds
         )
 
@@ -296,7 +305,9 @@ else:
 
     recent_words = [
         item["word"]
-        for item in recent_words_response.data
+        for item in (
+            recent_words_response.data or []
+        )
     ]
 
 
@@ -410,7 +421,11 @@ Example Meaning: <example meaning>
 
                 word = (
                     line
-                    .replace("Word:", "", 1)
+                    .replace(
+                        "Word:",
+                        "",
+                        1
+                    )
                     .strip()
                 )
 
@@ -419,7 +434,11 @@ Example Meaning: <example meaning>
 
                 pronunciation = (
                     line
-                    .replace("Pronunciation:", "", 1)
+                    .replace(
+                        "Pronunciation:",
+                        "",
+                        1
+                    )
                     .strip()
                 )
 
@@ -428,12 +447,18 @@ Example Meaning: <example meaning>
 
                 meaning = (
                     line
-                    .replace("Meaning:", "", 1)
+                    .replace(
+                        "Meaning:",
+                        "",
+                        1
+                    )
                     .strip()
                 )
 
 
-            elif line.startswith("Example Pronunciation:"):
+            elif line.startswith(
+                "Example Pronunciation:"
+            ):
 
                 example_pronunciation = (
                     line
@@ -446,7 +471,9 @@ Example Meaning: <example meaning>
                 )
 
 
-            elif line.startswith("Example Meaning:"):
+            elif line.startswith(
+                "Example Meaning:"
+            ):
 
                 example_meaning = (
                     line
@@ -463,7 +490,11 @@ Example Meaning: <example meaning>
 
                 example = (
                     line
-                    .replace("Example:", "", 1)
+                    .replace(
+                        "Example:",
+                        "",
+                        1
+                    )
                     .strip()
                 )
 
@@ -490,8 +521,12 @@ Example Meaning: <example meaning>
                 "pronunciation": pronunciation,
                 "meaning": meaning,
                 "example": example,
-                "example_pronunciation": example_pronunciation,
-                "example_meaning": example_meaning,
+                "example_pronunciation": (
+                    example_pronunciation
+                ),
+                "example_meaning": (
+                    example_meaning
+                ),
                 "language": language,
                 "learn_in": learn_in,
                 "email_sent": False

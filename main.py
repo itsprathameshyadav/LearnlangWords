@@ -153,37 +153,7 @@ today_start = datetime.combine(
 )
 
 
-total_seconds = (
-    now - today_start
-).total_seconds()
-
-
-window_seconds = 12 * 60 * 60
-
-
-if words_per_day == 1:
-
-    words_due = 1
-
-else:
-
-    progress = (
-        total_seconds /
-        window_seconds
-    )
-
-    words_due = int(
-        progress *
-        (words_per_day - 1)
-    ) + 1
-
-    if words_due > words_per_day:
-        words_due = words_per_day
-
-
-today_start_iso = (
-    today_start.isoformat()
-)
+today_start_iso = today_start.isoformat()
 
 
 today_words_response = (
@@ -208,81 +178,135 @@ today_words = (
 )
 
 
-words_sent_today = len(
-    today_words
-)
-
-
-print(
-    "Words due:",
-    words_due
-)
-
-print(
-    "Words already generated today:",
-    words_sent_today
-)
-
-
-words_to_generate = (
-    words_due -
-    words_sent_today
-)
-
-
-if words_to_generate <= 0:
-
-    print(
-        "No new word is due right now."
-    )
-
-    exit()
-
-
-recent_words_response = (
-    supabase
-    .table("vocabulary")
-    .select("word")
-    .eq("language", language)
-    .order(
-        "generated_at",
-        desc=True
-    )
-    .limit(20)
-    .execute()
-)
-
-
-recent_words = [
-    item["word"]
-    for item in recent_words_response.data
+unsent_words = [
+    word
+    for word in today_words
+    if not word.get("email_sent", False)
 ]
 
 
-recent_words_text = ", ".join(
-    recent_words
+sent_words_today = [
+    word
+    for word in today_words
+    if word.get("email_sent", False)
+]
+
+
+words_sent_today = len(
+    sent_words_today
 )
 
 
-if recent_words_text:
+print(
+    "Emails already sent today:",
+    words_sent_today
+)
 
-    avoid_text = f"""
+print(
+    "Unsent generated words:",
+    len(unsent_words)
+)
+
+
+if len(unsent_words) > 0:
+
+    print(
+        "\nThere are unsent words."
+    )
+
+else:
+
+    total_seconds = (
+        now - today_start
+    ).total_seconds()
+
+    window_seconds = 12 * 60 * 60
+
+
+    if words_per_day == 1:
+
+        words_due = 1
+
+    else:
+
+        progress = (
+            total_seconds /
+            window_seconds
+        )
+
+        words_due = int(
+            progress *
+            (words_per_day - 1)
+        ) + 1
+
+
+        if words_due > words_per_day:
+
+            words_due = words_per_day
+
+
+    print(
+        "Words due:",
+        words_due
+    )
+
+
+    words_to_generate = (
+        words_due -
+        words_sent_today
+    )
+
+
+    if words_to_generate <= 0:
+
+        print(
+            "No new word is due right now."
+        )
+
+        exit()
+
+
+    recent_words_response = (
+        supabase
+        .table("vocabulary")
+        .select("word")
+        .eq("language", language)
+        .order(
+            "generated_at",
+            desc=True
+        )
+        .limit(20)
+        .execute()
+    )
+
+
+    recent_words = [
+        item["word"]
+        for item in recent_words_response.data
+    ]
+
+
+    recent_words_text = ", ".join(
+        recent_words
+    )
+
+
+    if recent_words_text:
+
+        avoid_text = f"""
 Do not use any of these recently used words:
 
 {recent_words_text}
 """
 
-else:
+    else:
 
-    avoid_text = ""
-
-
-generated_words = []
+        avoid_text = ""
 
 
-for i in range(words_to_generate):
+    for i in range(words_to_generate):
 
-    prompt = f"""
+        prompt = f"""
 Generate one useful vocabulary word in {language}.
 
 The word should be suitable for a student
@@ -309,103 +333,109 @@ Example: <example sentence>
 """
 
 
-    result = gemini.models.generate_content(
-        model="gemini-3.5-flash-lite",
-        contents=prompt
-    )
-
-
-    text = result.text.strip()
-
-
-    print("\nGemini response:")
-    print(text)
-
-
-    lines = text.split("\n")
-
-
-    word = ""
-    meaning = ""
-    example = ""
-
-
-    for line in lines:
-
-        line = line.strip()
-
-
-        if line.startswith("Word:"):
-
-            word = (
-                line
-                .replace("Word:", "", 1)
-                .strip()
-            )
-
-
-        elif line.startswith("Meaning:"):
-
-            meaning = (
-                line
-                .replace("Meaning:", "", 1)
-                .strip()
-            )
-
-
-        elif line.startswith("Example:"):
-
-            example = (
-                line
-                .replace("Example:", "", 1)
-                .strip()
-            )
-
-
-    if not word or not meaning or not example:
-
-        raise Exception(
-            "Could not extract vocabulary information."
+        result = gemini.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=prompt
         )
 
 
-    supabase.table(
-        "vocabulary"
-    ).insert({
-        "word": word,
-        "meaning": meaning,
-        "example": example,
-        "language": language
-    }).execute()
+        text = result.text.strip()
 
 
-    print(
-        "Saved to Supabase."
-    )
+        print("\nGemini response:")
+        print(text)
 
 
-    generated_words.append({
-        "word": word,
-        "meaning": meaning,
-        "example": example
-    })
+        lines = text.split("\n")
 
 
-    recent_words.append(
-        word
-    )
+        word = ""
+        meaning = ""
+        example = ""
+
+
+        for line in lines:
+
+            line = line.strip()
+
+
+            if line.startswith("Word:"):
+
+                word = (
+                    line
+                    .replace("Word:", "", 1)
+                    .strip()
+                )
+
+
+            elif line.startswith("Meaning:"):
+
+                meaning = (
+                    line
+                    .replace("Meaning:", "", 1)
+                    .strip()
+                )
+
+
+            elif line.startswith("Example:"):
+
+                example = (
+                    line
+                    .replace("Example:", "", 1)
+                    .strip()
+                )
+
+
+        if not word or not meaning or not example:
+
+            raise Exception(
+                "Could not extract vocabulary information."
+            )
+
+
+        insert_response = (
+            supabase
+            .table("vocabulary")
+            .insert({
+                "word": word,
+                "meaning": meaning,
+                "example": example,
+                "language": language,
+                "email_sent": False
+            })
+            .execute()
+        )
+
+
+        print(
+            "Saved to Supabase."
+        )
+
+
+        new_word = insert_response.data[0]
+
+        unsent_words.insert(
+            0,
+            new_word
+        )
+
+
+        recent_words.append(
+            word
+        )
 
 
 print(
-    "\nGenerated",
-    len(generated_words),
-    "new word(s)."
+    "\nWords waiting for email:",
+    len(unsent_words)
 )
 
 
 for index, item in enumerate(
-    generated_words
+    reversed(unsent_words)
 ):
+
+    word_id = item["id"]
 
     word = item["word"]
 
@@ -525,6 +555,21 @@ Keep learning, one word at a time.
         )
 
 
+        supabase.table(
+            "vocabulary"
+        ).update({
+            "email_sent": True
+        }).eq(
+            "id",
+            word_id
+        ).execute()
+
+
+        print(
+            f"Marked email as sent: {word}"
+        )
+
+
     except Exception as e:
 
         print(
@@ -558,3 +603,8 @@ Keep learning, one word at a time.
         print(
             "Automation marked as started."
         )
+
+
+print(
+    "\nLearnLangWords finished successfully."
+)

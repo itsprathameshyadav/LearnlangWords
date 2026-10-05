@@ -1,5 +1,5 @@
-const SUPABASE_URL="https://hriymqcbdsbzerucgvrx.supabase.co"
-const SUPABASE_KEY="sb_publishable_g-wbrT-Hvj3BTl2PNWLw_A_yCwGREQl"
+const SUPABASE_URL = "https://hriymqcbdsbzerucgvrx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_g-wbrT-Hvj3BTl2PNWLw_A_yCwGREQl";
 
 const { createClient } = supabase;
 
@@ -8,11 +8,8 @@ const db = createClient(
     SUPABASE_KEY
 );
 
-let learners = [];
-let selectedLearner = null;
+let settings = null;
 let vocabulary = [];
-
-const learnerSelect = document.getElementById("learner-select");
 
 const emailInput = document.getElementById("email");
 const languageInput = document.getElementById("language");
@@ -36,109 +33,51 @@ const historyCount = document.getElementById("history-count");
 const saveSettingsButton = document.getElementById("save-settings");
 const saveMessage = document.getElementById("save-message");
 
-const addLearnerButton = document.getElementById("add-learner-btn");
-const learnerModal = document.getElementById("learner-modal");
-const closeModalButton = document.getElementById("close-modal");
-
-const newLearnerEmail = document.getElementById("new-learner-email");
-const createLearnerButton = document.getElementById("create-learner");
-const learnerMessage = document.getElementById("learner-message");
-
 
 // -----------------------------
-// LOAD LEARNERS
+// LOAD SETTINGS
 // -----------------------------
 
-async function loadLearners() {
+async function loadSettings() {
 
     const { data, error } = await db
-        .from("learners")
+        .from("settings")
         .select("*")
-        .order("id", { ascending: true });
+        .eq("id", 1)
+        .single();
 
     if (error) {
+
         console.error(error);
 
-        learnerSelect.innerHTML = `
-            <option value="">Unable to load learners</option>
-        `;
+        saveMessage.textContent =
+            "Unable to load settings.";
 
         return;
     }
 
-    learners = data || [];
-
-    learnerSelect.innerHTML = "";
-
-    if (learners.length === 0) {
-
-        learnerSelect.innerHTML = `
-            <option value="">No learners</option>
-        `;
-
-        clearDashboard();
-
-        return;
-    }
-
-    learners.forEach(learner => {
-
-        const option = document.createElement("option");
-
-        option.value = learner.id;
-
-        option.textContent =
-            learner.email || `Learner ${learner.id}`;
-
-        learnerSelect.appendChild(option);
-
-    });
-
-    selectedLearner = learners[0];
-
-    learnerSelect.value = selectedLearner.id;
-
-    await loadSelectedLearner();
-}
-
-
-// -----------------------------
-// LOAD SELECTED LEARNER
-// -----------------------------
-
-async function loadSelectedLearner() {
-
-    const id = Number(learnerSelect.value);
-
-    selectedLearner =
-        learners.find(
-            learner => Number(learner.id) === id
-        );
-
-    if (!selectedLearner) {
-        return;
-    }
+    settings = data;
 
     emailInput.value =
-        selectedLearner.email || "";
+        settings.email || "";
 
     languageInput.value =
-        selectedLearner.language || "English";
+        settings.language || "English";
 
     learnInInput.value =
-        selectedLearner.learn_in || "English";
+        settings.learn_in || "English";
 
     wordsPerDayInput.value =
-        selectedLearner.words_per_day || 1;
+        settings.words_per_day || 1;
 
     heroLanguage.textContent =
-        selectedLearner.language || "—";
+        settings.language || "—";
 
     heroLearnIn.textContent =
-        selectedLearner.learn_in || "—";
+        settings.learn_in || "—";
 
     dailyGoal.textContent =
-        selectedLearner.words_per_day || 0;
+        settings.words_per_day || 0;
 
     await loadVocabulary();
 }
@@ -150,18 +89,21 @@ async function loadSelectedLearner() {
 
 async function loadVocabulary() {
 
-    if (!selectedLearner) {
-        return;
-    }
-
     const { data, error } = await db
         .from("vocabulary")
         .select("*")
-        .eq("learner_id", selectedLearner.id)
-        .order("generated_at", { ascending: false });
+        .order("generated_at", {
+            ascending: false
+        });
 
     if (error) {
+
         console.error(error);
+
+        vocabulary = [];
+
+        renderVocabulary();
+
         return;
     }
 
@@ -185,8 +127,12 @@ function renderVocabulary() {
             return false;
         }
 
-        return getIndiaDate(word.generated_at) === today;
+        return getIndiaDate(
+            word.generated_at
+        ) === today;
+
     });
+
 
     const historyWords = vocabulary.filter(word => {
 
@@ -194,14 +140,19 @@ function renderVocabulary() {
             return false;
         }
 
-        return getIndiaDate(word.generated_at) !== today;
+        return getIndiaDate(
+            word.generated_at
+        ) !== today;
+
     });
+
 
     wordsLearned.textContent =
         vocabulary.length;
 
     wordsToday.textContent =
         todayWords.length;
+
 
     todayCount.textContent =
         `${todayWords.length} ${
@@ -210,12 +161,14 @@ function renderVocabulary() {
                 : "words"
         }`;
 
+
     historyCount.textContent =
         `${historyWords.length} ${
             historyWords.length === 1
                 ? "word"
                 : "words"
         }`;
+
 
     renderToday(todayWords);
 
@@ -237,14 +190,25 @@ function renderToday(words) {
 
         todayVocabulary.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">✦</div>
-                <h3>No words yet</h3>
-                <p>Your daily vocabulary will appear here.</p>
+
+                <div class="empty-icon">
+                    ✦
+                </div>
+
+                <h3>
+                    No words yet
+                </h3>
+
+                <p>
+                    Your daily vocabulary will appear here.
+                </p>
+
             </div>
         `;
 
         return;
     }
+
 
     words.forEach(word => {
 
@@ -268,14 +232,25 @@ function renderHistory(words) {
 
         previousVocabulary.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">◷</div>
-                <h3>Your history is empty</h3>
-                <p>Previously learned words will appear here.</p>
+
+                <div class="empty-icon">
+                    ◷
+                </div>
+
+                <h3>
+                    Your history is empty
+                </h3>
+
+                <p>
+                    Previously learned words will appear here.
+                </p>
+
             </div>
         `;
 
         return;
     }
+
 
     words.forEach(word => {
 
@@ -299,8 +274,10 @@ function createVocabularyCard(word) {
     card.className =
         "vocabulary-card";
 
+
     const date =
         formatDate(word.generated_at);
+
 
     card.innerHTML = `
 
@@ -309,7 +286,9 @@ function createVocabularyCard(word) {
             <div>
 
                 <h3>
-                    ${escapeHtml(word.word || "")}
+                    ${escapeHtml(
+                        word.word || ""
+                    )}
                 </h3>
 
                 ${
@@ -334,7 +313,9 @@ function createVocabularyCard(word) {
 
 
         <div class="meaning">
-            ${escapeHtml(word.meaning || "")}
+            ${escapeHtml(
+                word.meaning || ""
+            )}
         </div>
 
 
@@ -345,7 +326,9 @@ function createVocabularyCard(word) {
             </p>
 
             <p class="example-text">
-                ${escapeHtml(word.example || "")}
+                ${escapeHtml(
+                    word.example || ""
+                )}
             </p>
 
             ${
@@ -375,6 +358,7 @@ function createVocabularyCard(word) {
         </div>
     `;
 
+
     return card;
 }
 
@@ -391,20 +375,24 @@ saveSettingsButton.addEventListener(
 
 async function saveSettings() {
 
-    if (!selectedLearner) {
+    if (!settings) {
         return;
     }
 
-    saveSettingsButton.disabled = true;
+
+    saveSettingsButton.disabled =
+        true;
+
 
     saveMessage.textContent =
         "Saving...";
 
 
     const oldEmail =
-        (selectedLearner.email || "")
+        (settings.email || "")
             .trim()
             .toLowerCase();
+
 
     const newEmail =
         emailInput.value
@@ -412,10 +400,17 @@ async function saveSettings() {
             .toLowerCase();
 
 
-    /*
-       If the email changed, treat this
-       as a new automation start.
-    */
+    if (!newEmail) {
+
+        saveMessage.textContent =
+            "Please enter an email address.";
+
+        saveSettingsButton.disabled =
+            false;
+
+        return;
+    }
+
 
     const emailChanged =
         oldEmail !== newEmail;
@@ -437,18 +432,58 @@ async function saveSettings() {
     };
 
 
+    // --------------------------------
+    // EMAIL CHANGED
+    // --------------------------------
+
     if (emailChanged) {
+
+        saveMessage.textContent =
+            "Changing email and starting fresh...";
+
+
+        /*
+         * Delete all existing vocabulary.
+         */
+
+        const { error: deleteError } =
+            await db
+                .from("vocabulary")
+                .delete()
+                .not("id", "is", null);
+
+
+        if (deleteError) {
+
+            console.error(deleteError);
+
+            saveMessage.textContent =
+                "Could not delete old vocabulary.";
+
+            saveSettingsButton.disabled =
+                false;
+
+            return;
+        }
+
+
+        /*
+         * Reset automation.
+         */
 
         updatedSettings.automation_started =
             false;
-
     }
 
 
+    // --------------------------------
+    // SAVE SETTINGS
+    // --------------------------------
+
     const { data, error } = await db
-        .from("learners")
+        .from("settings")
         .update(updatedSettings)
-        .eq("id", selectedLearner.id)
+        .eq("id", 1)
         .select()
         .single();
 
@@ -460,67 +495,57 @@ async function saveSettings() {
         saveMessage.textContent =
             "Could not save settings.";
 
-        saveSettingsButton.disabled = false;
+        saveSettingsButton.disabled =
+            false;
 
         return;
     }
 
 
-    selectedLearner = data;
+    settings = data;
 
 
-    learners = learners.map(learner => {
+    emailInput.value =
+        data.email || "";
 
-        if (
-            Number(learner.id) ===
-            Number(data.id)
-        ) {
-            return data;
-        }
+    languageInput.value =
+        data.language || "English";
 
-        return learner;
+    learnInInput.value =
+        data.learn_in || "English";
 
-    });
-
-
-    /*
-       Update the learner name in
-       the selector if the email changed.
-    */
-
-    const selectedOption =
-        learnerSelect.querySelector(
-            `option[value="${data.id}"]`
-        );
-
-    if (selectedOption) {
-
-        selectedOption.textContent =
-            data.email;
-
-    }
+    wordsPerDayInput.value =
+        data.words_per_day || 1;
 
 
     heroLanguage.textContent =
-        data.language;
+        data.language || "—";
 
     heroLearnIn.textContent =
-        data.learn_in;
+        data.learn_in || "—";
 
     dailyGoal.textContent =
-        data.words_per_day;
+        data.words_per_day || 0;
 
+
+    // --------------------------------
+    // IF EMAIL CHANGED
+    // --------------------------------
 
     if (emailChanged) {
 
+        vocabulary = [];
+
+        renderVocabulary();
+
+
         saveMessage.textContent =
-            "Email changed. First-time email will be sent ✓";
+            "Email changed. Started fresh ✓";
 
     } else {
 
         saveMessage.textContent =
             "Settings saved successfully ✓";
-
     }
 
 
@@ -531,157 +556,7 @@ async function saveSettings() {
     }, 4000);
 
 
-    saveSettingsButton.disabled = false;
-}
-
-
-// -----------------------------
-// CHANGE LEARNER
-// -----------------------------
-
-learnerSelect.addEventListener(
-    "change",
-    async () => {
-
-        await loadSelectedLearner();
-
-    }
-);
-
-
-// -----------------------------
-// ADD LEARNER
-// -----------------------------
-
-addLearnerButton.addEventListener(
-    "click",
-    () => {
-
-        newLearnerEmail.value = "";
-
-        learnerMessage.textContent = "";
-
-        learnerModal.classList.add("show");
-
-    }
-);
-
-
-closeModalButton.addEventListener(
-    "click",
-    () => {
-
-        learnerModal.classList.remove("show");
-
-    }
-);
-
-
-learnerModal.addEventListener(
-    "click",
-    event => {
-
-        if (event.target === learnerModal) {
-
-            learnerModal.classList.remove("show");
-
-        }
-
-    }
-);
-
-
-createLearnerButton.addEventListener(
-    "click",
-    createLearner
-);
-
-
-async function createLearner() {
-
-    const email =
-        newLearnerEmail.value.trim();
-
-
-    if (!email) {
-
-        learnerMessage.textContent =
-            "Please enter an email address.";
-
-        return;
-    }
-
-
-    createLearnerButton.disabled =
-        true;
-
-    learnerMessage.textContent =
-        "Creating learner...";
-
-
-    const { data, error } = await db
-        .from("learners")
-        .insert({
-
-            email: email,
-
-            language: "English",
-
-            learn_in: "English",
-
-            words_per_day: 2,
-
-            automation_started: false,
-
-            active: true
-
-        })
-        .select()
-        .single();
-
-
-    if (error) {
-
-        console.error(error);
-
-        learnerMessage.textContent =
-            "Could not create learner.";
-
-        createLearnerButton.disabled =
-            false;
-
-        return;
-    }
-
-
-    learners.push(data);
-
-
-    const option =
-        document.createElement("option");
-
-    option.value = data.id;
-
-    option.textContent = data.email;
-
-    learnerSelect.appendChild(option);
-
-    learnerSelect.value =
-        data.id;
-
-    selectedLearner =
-        data;
-
-
-    learnerModal.classList.remove(
-        "show"
-    );
-
-
-    await loadSelectedLearner();
-
-
-    createLearnerButton.disabled =
+    saveSettingsButton.disabled =
         false;
 }
 
@@ -713,7 +588,9 @@ navItems.forEach(item => {
             });
 
 
-            item.classList.add("active");
+            item.classList.add(
+                "active"
+            );
 
 
             document
@@ -734,9 +611,11 @@ navItems.forEach(item => {
 
 
             if (target) {
+
                 target.classList.add(
                     "active"
                 );
+
             }
 
 
@@ -764,6 +643,7 @@ navItems.forEach(item => {
 
                 pageTitle.textContent =
                     "Settings";
+
             }
 
 
@@ -791,6 +671,7 @@ function updateLastRun(words) {
 
         return;
     }
+
 
     const latest =
         words[0].generated_at;
@@ -841,6 +722,7 @@ function formatDate(dateString) {
         return "";
     }
 
+
     return new Intl.DateTimeFormat(
         "en-IN",
         {
@@ -862,8 +744,10 @@ function formatRelativeTime(
     const date =
         new Date(dateString);
 
+
     const now =
         new Date();
+
 
     const difference =
         Math.floor(
@@ -872,8 +756,11 @@ function formatRelativeTime(
 
 
     if (difference < 1) {
+
         return "just now";
+
     }
+
 
     if (difference < 60) {
 
@@ -914,22 +801,27 @@ function formatRelativeTime(
 function escapeHtml(value) {
 
     return String(value)
+
         .replace(
             /&/g,
             "&amp;"
         )
+
         .replace(
             /</g,
             "&lt;"
         )
+
         .replace(
             />/g,
             "&gt;"
         )
+
         .replace(
             /"/g,
             "&quot;"
         )
+
         .replace(
             /'/g,
             "&#039;"
@@ -938,54 +830,7 @@ function escapeHtml(value) {
 
 
 // -----------------------------
-// CLEAR DASHBOARD
-// -----------------------------
-
-function clearDashboard() {
-
-    heroLanguage.textContent = "—";
-
-    heroLearnIn.textContent = "—";
-
-    wordsLearned.textContent = "0";
-
-    wordsToday.textContent = "0";
-
-    dailyGoal.textContent = "0";
-
-    todayCount.textContent =
-        "0 words";
-
-    historyCount.textContent =
-        "0 words";
-
-
-    todayVocabulary.innerHTML = `
-        <div class="empty-state">
-
-            <div class="empty-icon">
-                +
-            </div>
-
-            <h3>
-                No learners yet
-            </h3>
-
-            <p>
-                Add a learner to start using
-                LearnLangWords.
-            </p>
-
-        </div>
-    `;
-
-
-    previousVocabulary.innerHTML = "";
-}
-
-
-// -----------------------------
 // START
 // -----------------------------
 
-loadLearners();
+loadSettings();

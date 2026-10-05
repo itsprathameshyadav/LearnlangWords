@@ -444,5 +444,113 @@ document
         saveSettings
     );
 
+    async function loadAutomationStatus() {
+
+    const statusText = document.getElementById("automation-status");
+    const statusDot = document.getElementById("status-dot");
+    const lastRun = document.getElementById("last-run");
+    const lastWord = document.getElementById("last-word");
+
+    if (!statusText || !statusDot || !lastRun || !lastWord) {
+        return;
+    }
+
+    try {
+
+        const { data: settingsData, error: settingsError } = await db
+            .from("settings")
+            .select("automation_started")
+            .eq("id", 1)
+            .single();
+
+        if (settingsError) {
+            throw settingsError;
+        }
+
+        const { data: vocabularyData, error: vocabularyError } = await db
+            .from("vocabulary")
+            .select("word, generated_at, email_sent")
+            .order("generated_at", { ascending: false })
+            .limit(1);
+
+        if (vocabularyError) {
+            throw vocabularyError;
+        }
+
+        const latestWord = vocabularyData && vocabularyData.length > 0
+            ? vocabularyData[0]
+            : null;
+
+        if (settingsData && settingsData.automation_started) {
+
+            statusText.textContent = "Active";
+
+            statusDot.classList.remove(
+                "waiting",
+                "error"
+            );
+
+            statusDot.classList.add("active");
+
+        } else {
+
+            statusText.textContent = "Waiting";
+
+            statusDot.classList.remove(
+                "active",
+                "error"
+            );
+
+            statusDot.classList.add("waiting");
+        }
+
+        if (latestWord) {
+
+            lastWord.textContent = latestWord.word;
+
+            const date = new Date(
+                latestWord.generated_at
+            );
+
+            lastRun.textContent = date.toLocaleString(
+                "en-IN",
+                {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        } else {
+
+            lastWord.textContent = "None";
+            lastRun.textContent = "Never";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Automation status error:",
+            error
+        );
+
+        statusText.textContent = "Unable to check";
+
+        statusDot.classList.remove(
+            "active",
+            "waiting"
+        );
+
+        statusDot.classList.add("error");
+
+        lastRun.textContent = "Unavailable";
+        lastWord.textContent = "Unavailable";
+    }
+}
+
 
 loadSettings();
+loadVocabulary();
+loadAutomationStatus();

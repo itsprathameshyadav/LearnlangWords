@@ -8,15 +8,9 @@ const db = createClient(
     SUPABASE_KEY
 );
 
-
 let learners = [];
 let selectedLearner = null;
 let vocabulary = [];
-
-
-// -----------------------------
-// ELEMENTS
-// -----------------------------
 
 const learnerSelect = document.getElementById("learner-select");
 
@@ -64,9 +58,11 @@ async function loadLearners() {
 
     if (error) {
         console.error(error);
+
         learnerSelect.innerHTML = `
             <option value="">Unable to load learners</option>
         `;
+
         return;
     }
 
@@ -81,6 +77,7 @@ async function loadLearners() {
         `;
 
         clearDashboard();
+
         return;
     }
 
@@ -94,6 +91,7 @@ async function loadLearners() {
             learner.email || `Learner ${learner.id}`;
 
         learnerSelect.appendChild(option);
+
     });
 
     selectedLearner = learners[0];
@@ -113,13 +111,16 @@ async function loadSelectedLearner() {
     const id = Number(learnerSelect.value);
 
     selectedLearner =
-        learners.find(learner => Number(learner.id) === id);
+        learners.find(
+            learner => Number(learner.id) === id
+        );
 
     if (!selectedLearner) {
         return;
     }
 
-    emailInput.value = selectedLearner.email || "";
+    emailInput.value =
+        selectedLearner.email || "";
 
     languageInput.value =
         selectedLearner.language || "English";
@@ -196,17 +197,25 @@ function renderVocabulary() {
         return getIndiaDate(word.generated_at) !== today;
     });
 
+    wordsLearned.textContent =
+        vocabulary.length;
 
-    wordsLearned.textContent = vocabulary.length;
-
-    wordsToday.textContent = todayWords.length;
+    wordsToday.textContent =
+        todayWords.length;
 
     todayCount.textContent =
-        `${todayWords.length} ${todayWords.length === 1 ? "word" : "words"}`;
+        `${todayWords.length} ${
+            todayWords.length === 1
+                ? "word"
+                : "words"
+        }`;
 
     historyCount.textContent =
-        `${historyWords.length} ${historyWords.length === 1 ? "word" : "words"}`;
-
+        `${historyWords.length} ${
+            historyWords.length === 1
+                ? "word"
+                : "words"
+        }`;
 
     renderToday(todayWords);
 
@@ -242,6 +251,7 @@ function renderToday(words) {
         todayVocabulary.appendChild(
             createVocabularyCard(word)
         );
+
     });
 }
 
@@ -272,6 +282,7 @@ function renderHistory(words) {
         previousVocabulary.appendChild(
             createVocabularyCard(word)
         );
+
     });
 }
 
@@ -282,11 +293,14 @@ function renderHistory(words) {
 
 function createVocabularyCard(word) {
 
-    const card = document.createElement("article");
+    const card =
+        document.createElement("article");
 
-    card.className = "vocabulary-card";
+    card.className =
+        "vocabulary-card";
 
-    const date = formatDate(word.generated_at);
+    const date =
+        formatDate(word.generated_at);
 
     card.innerHTML = `
 
@@ -294,13 +308,19 @@ function createVocabularyCard(word) {
 
             <div>
 
-                <h3>${escapeHtml(word.word || "")}</h3>
+                <h3>
+                    ${escapeHtml(word.word || "")}
+                </h3>
 
                 ${
                     word.pronunciation
-                        ? `<p class="pronunciation">
-                            ${escapeHtml(word.pronunciation)}
-                           </p>`
+                        ? `
+                            <p class="pronunciation">
+                                ${escapeHtml(
+                                    word.pronunciation
+                                )}
+                            </p>
+                        `
                         : ""
                 }
 
@@ -328,30 +348,31 @@ function createVocabularyCard(word) {
                 ${escapeHtml(word.example || "")}
             </p>
 
-
             ${
                 word.example_pronunciation
                     ? `
-                    <p class="example-pronunciation">
-                        ${escapeHtml(word.example_pronunciation)}
-                    </p>
+                        <p class="example-pronunciation">
+                            ${escapeHtml(
+                                word.example_pronunciation
+                            )}
+                        </p>
                     `
                     : ""
             }
 
-
             ${
                 word.example_meaning
                     ? `
-                    <p class="example-meaning">
-                        ${escapeHtml(word.example_meaning)}
-                    </p>
+                        <p class="example-meaning">
+                            ${escapeHtml(
+                                word.example_meaning
+                            )}
+                        </p>
                     `
                     : ""
             }
 
         </div>
-
     `;
 
     return card;
@@ -376,11 +397,33 @@ async function saveSettings() {
 
     saveSettingsButton.disabled = true;
 
-    saveMessage.textContent = "Saving...";
+    saveMessage.textContent =
+        "Saving...";
+
+
+    const oldEmail =
+        (selectedLearner.email || "")
+            .trim()
+            .toLowerCase();
+
+    const newEmail =
+        emailInput.value
+            .trim()
+            .toLowerCase();
+
+
+    /*
+       If the email changed, treat this
+       as a new automation start.
+    */
+
+    const emailChanged =
+        oldEmail !== newEmail;
+
 
     const updatedSettings = {
 
-        email: emailInput.value.trim(),
+        email: newEmail,
 
         language:
             languageInput.value,
@@ -392,6 +435,14 @@ async function saveSettings() {
             Number(wordsPerDayInput.value)
 
     };
+
+
+    if (emailChanged) {
+
+        updatedSettings.automation_started =
+            false;
+
+    }
 
 
     const { data, error } = await db
@@ -417,14 +468,37 @@ async function saveSettings() {
 
     selectedLearner = data;
 
+
     learners = learners.map(learner => {
 
-        if (Number(learner.id) === Number(data.id)) {
+        if (
+            Number(learner.id) ===
+            Number(data.id)
+        ) {
             return data;
         }
 
         return learner;
+
     });
+
+
+    /*
+       Update the learner name in
+       the selector if the email changed.
+    */
+
+    const selectedOption =
+        learnerSelect.querySelector(
+            `option[value="${data.id}"]`
+        );
+
+    if (selectedOption) {
+
+        selectedOption.textContent =
+            data.email;
+
+    }
 
 
     heroLanguage.textContent =
@@ -437,15 +511,24 @@ async function saveSettings() {
         data.words_per_day;
 
 
-    saveMessage.textContent =
-        "Settings saved successfully ✓";
+    if (emailChanged) {
+
+        saveMessage.textContent =
+            "Email changed. First-time email will be sent ✓";
+
+    } else {
+
+        saveMessage.textContent =
+            "Settings saved successfully ✓";
+
+    }
 
 
     setTimeout(() => {
 
         saveMessage.textContent = "";
 
-    }, 3000);
+    }, 4000);
 
 
     saveSettingsButton.disabled = false;
@@ -529,7 +612,8 @@ async function createLearner() {
     }
 
 
-    createLearnerButton.disabled = true;
+    createLearnerButton.disabled =
+        true;
 
     learnerMessage.textContent =
         "Creating learner...";
@@ -563,7 +647,8 @@ async function createLearner() {
         learnerMessage.textContent =
             "Could not create learner.";
 
-        createLearnerButton.disabled = false;
+        createLearnerButton.disabled =
+            false;
 
         return;
     }
@@ -581,18 +666,23 @@ async function createLearner() {
 
     learnerSelect.appendChild(option);
 
-    learnerSelect.value = data.id;
+    learnerSelect.value =
+        data.id;
 
-    selectedLearner = data;
+    selectedLearner =
+        data;
 
 
-    learnerModal.classList.remove("show");
+    learnerModal.classList.remove(
+        "show"
+    );
 
 
     await loadSelectedLearner();
 
 
-    createLearnerButton.disabled = false;
+    createLearnerButton.disabled =
+        false;
 }
 
 
@@ -606,67 +696,84 @@ const navItems =
 
 navItems.forEach(item => {
 
-    item.addEventListener("click", () => {
+    item.addEventListener(
+        "click",
+        () => {
 
-        const section =
-            item.dataset.section;
-
-
-        navItems.forEach(nav => {
-
-            nav.classList.remove("active");
-
-        });
-
-        item.classList.add("active");
+            const section =
+                item.dataset.section;
 
 
-        document
-            .querySelectorAll(".page-section")
-            .forEach(page => {
+            navItems.forEach(nav => {
 
-                page.classList.remove("active");
+                nav.classList.remove(
+                    "active"
+                );
 
             });
 
 
-        const target =
-            document.getElementById(
-                `${section}-section`
-            );
+            item.classList.add("active");
 
 
-        if (target) {
-            target.classList.add("active");
+            document
+                .querySelectorAll(".page-section")
+                .forEach(page => {
+
+                    page.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+            const target =
+                document.getElementById(
+                    `${section}-section`
+                );
+
+
+            if (target) {
+                target.classList.add(
+                    "active"
+                );
+            }
+
+
+            const pageTitle =
+                document.getElementById(
+                    "page-title"
+                );
+
+
+            if (section === "dashboard") {
+
+                pageTitle.textContent =
+                    "Dashboard";
+
+            } else if (
+                section === "vocabulary"
+            ) {
+
+                pageTitle.textContent =
+                    "Vocabulary";
+
+            } else if (
+                section === "settings"
+            ) {
+
+                pageTitle.textContent =
+                    "Settings";
+            }
+
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+
         }
-
-
-        const pageTitle =
-            document.getElementById("page-title");
-
-
-        if (section === "dashboard") {
-
-            pageTitle.textContent =
-                "Dashboard";
-
-        } else if (section === "vocabulary") {
-
-            pageTitle.textContent =
-                "Vocabulary";
-
-        } else if (section === "settings") {
-
-            pageTitle.textContent =
-                "Settings";
-        }
-
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-
-    });
+    );
 
 });
 
@@ -699,7 +806,9 @@ function updateLastRun(words) {
 
 
     lastRun.textContent =
-        `Last word ${formatRelativeTime(latest)}`;
+        `Last word ${formatRelativeTime(
+            latest
+        )}`;
 }
 
 
@@ -707,7 +816,9 @@ function updateLastRun(words) {
 // DATE HELPERS
 // -----------------------------
 
-function getIndiaDate(dateString = null) {
+function getIndiaDate(
+    dateString = null
+) {
 
     const date =
         dateString
@@ -738,11 +849,15 @@ function formatDate(dateString) {
             year: "numeric",
             timeZone: "Asia/Kolkata"
         }
-    ).format(new Date(dateString));
+    ).format(
+        new Date(dateString)
+    );
 }
 
 
-function formatRelativeTime(dateString) {
+function formatRelativeTime(
+    dateString
+) {
 
     const date =
         new Date(dateString);
@@ -761,24 +876,34 @@ function formatRelativeTime(dateString) {
     }
 
     if (difference < 60) {
+
         return `${difference} min ago`;
+
     }
 
 
     const hours =
-        Math.floor(difference / 60);
+        Math.floor(
+            difference / 60
+        );
 
 
     if (hours < 24) {
+
         return `${hours} hr ago`;
+
     }
 
 
     const days =
-        Math.floor(hours / 24);
+        Math.floor(
+            hours / 24
+        );
 
 
-    return `${days} day${days === 1 ? "" : "s"} ago`;
+    return `${days} day${
+        days === 1 ? "" : "s"
+    } ago`;
 }
 
 
@@ -789,11 +914,26 @@ function formatRelativeTime(dateString) {
 function escapeHtml(value) {
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
@@ -813,17 +953,32 @@ function clearDashboard() {
 
     dailyGoal.textContent = "0";
 
-    todayCount.textContent = "0 words";
+    todayCount.textContent =
+        "0 words";
 
-    historyCount.textContent = "0 words";
+    historyCount.textContent =
+        "0 words";
+
 
     todayVocabulary.innerHTML = `
         <div class="empty-state">
-            <div class="empty-icon">+</div>
-            <h3>No learners yet</h3>
-            <p>Add a learner to start using LearnLangWords.</p>
+
+            <div class="empty-icon">
+                +
+            </div>
+
+            <h3>
+                No learners yet
+            </h3>
+
+            <p>
+                Add a learner to start using
+                LearnLangWords.
+            </p>
+
         </div>
     `;
+
 
     previousVocabulary.innerHTML = "";
 }

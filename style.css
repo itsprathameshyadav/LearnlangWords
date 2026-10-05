@@ -42,6 +42,8 @@ header p {
 }
 
 
+/* Settings */
+
 .settings-card {
     background: #ffffff;
 
@@ -144,6 +146,8 @@ button:disabled {
 }
 
 
+/* Statistics */
+
 .stats {
     display: grid;
 
@@ -182,6 +186,95 @@ button:disabled {
     font-weight: bold;
 }
 
+
+/* Automation */
+
+.automation-card {
+    background: #ffffff;
+
+    padding: 24px;
+
+    border-radius: 12px;
+
+    margin-bottom: 30px;
+}
+
+
+.automation-card h2 {
+    margin-top: 0;
+
+    margin-bottom: 20px;
+}
+
+
+.automation-status {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+.status-container {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    font-weight: 600;
+}
+
+
+.status-dot {
+    width: 12px;
+
+    height: 12px;
+
+    border-radius: 50%;
+
+    display: inline-block;
+
+    background: #999999;
+}
+
+
+.status-dot.active {
+    background: #22c55e;
+}
+
+
+.status-dot.waiting {
+    background: #f59e0b;
+}
+
+
+.status-dot.error {
+    background: #ef4444;
+}
+
+
+.automation-info {
+    text-align: right;
+
+    color: #536273;
+}
+
+
+.automation-info p {
+    margin: 5px 0;
+}
+
+
+.automation-info strong {
+    color: #0b1f3a;
+}
+
+
+/* Vocabulary */
 
 .vocabulary-section {
     margin-bottom: 35px;
@@ -240,6 +333,8 @@ button:disabled {
 }
 
 
+/* Mobile */
+
 @media (max-width: 700px) {
 
     .container {
@@ -261,6 +356,18 @@ button:disabled {
 
     header h1 {
         font-size: 28px;
+    }
+
+
+    .automation-status {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .automation-info {
+        text-align: left;
     }
 
 }

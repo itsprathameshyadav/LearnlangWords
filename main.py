@@ -615,34 +615,6 @@ Words per day:
 Daily learning window:
 8:00 AM - 8:00 PM IST
 
-
-Your very first bonus word for today is:
-
-
-Word:
-{word}
-
-
-Pronunciation:
-{pronunciation}
-
-
-Meaning:
-{meaning}
-
-
-Example:
-{example}
-
-
-Example Pronunciation:
-{example_pronunciation}
-
-
-Example Meaning:
-{example_meaning}
-
-
 From now on, LearnLangWords will continue
 sending your vocabulary words throughout the day.
 

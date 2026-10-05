@@ -11,6 +11,7 @@ let vocabulary = [];
 
 
 async function loadSettings() {
+
     const { data, error } = await db
         .from("settings")
         .select("*")
@@ -18,9 +19,15 @@ async function loadSettings() {
         .single();
 
     if (error) {
-        console.error("Error loading settings:", error);
 
-        document.getElementById("save-message").textContent =
+        console.error(
+            "Error loading settings:",
+            error
+        );
+
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Could not load settings.";
 
         return;
@@ -39,26 +46,33 @@ async function loadSettings() {
 
     document.getElementById("words-per-day").value =
         settings.words_per_day || 1;
-
-    await loadVocabulary();
 }
 
 
 async function loadVocabulary() {
+
     const { data, error } = await db
         .from("vocabulary")
         .select("*")
-        .order("generated_at", {
-            ascending: false
-        });
+        .order(
+            "generated_at",
+            {
+                ascending: false
+            }
+        );
 
     if (error) {
-        console.error("Error loading vocabulary:", error);
+
+        console.error(
+            "Error loading vocabulary:",
+            error
+        );
 
         vocabulary = [];
 
         updateDashboard();
         renderVocabulary();
+        updateAutomationStatus();
 
         return;
     }
@@ -67,10 +81,12 @@ async function loadVocabulary() {
 
     updateDashboard();
     renderVocabulary();
+    updateAutomationStatus();
 }
 
 
 async function saveSettings() {
+
     const newEmail =
         document.getElementById("email").value.trim();
 
@@ -82,12 +98,17 @@ async function saveSettings() {
 
     const newWordsPerDay =
         parseInt(
-            document.getElementById("words-per-day").value
+            document.getElementById(
+                "words-per-day"
+            ).value
         );
 
 
     if (!newEmail) {
-        document.getElementById("save-message").textContent =
+
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Please enter your email.";
 
         return;
@@ -95,7 +116,10 @@ async function saveSettings() {
 
 
     if (!newEmail.includes("@")) {
-        document.getElementById("save-message").textContent =
+
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Please enter a valid email.";
 
         return;
@@ -112,15 +136,22 @@ async function saveSettings() {
         const { error } = await db
             .from("vocabulary")
             .delete()
-            .not("id", "is", null);
+            .not(
+                "id",
+                "is",
+                null
+            );
 
         if (error) {
+
             console.error(
                 "Error deleting vocabulary:",
                 error
             );
 
-            document.getElementById("save-message").textContent =
+            document.getElementById(
+                "status-message"
+            ).textContent =
                 "Could not reset vocabulary.";
 
             return;
@@ -135,9 +166,10 @@ async function saveSettings() {
             language: newLanguage,
             learn_in: newLearnIn,
             words_per_day: newWordsPerDay,
-            automation_started: emailChanged
-                ? false
-                : settings.automation_started
+            automation_started:
+                emailChanged
+                    ? false
+                    : settings.automation_started
         })
         .eq("id", 1)
         .select("*")
@@ -145,12 +177,15 @@ async function saveSettings() {
 
 
     if (error) {
+
         console.error(
             "Error updating settings:",
             error
         );
 
-        document.getElementById("save-message").textContent =
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Could not save settings.";
 
         return;
@@ -161,23 +196,32 @@ async function saveSettings() {
 
 
     if (emailChanged) {
+
         vocabulary = [];
 
         updateDashboard();
         renderVocabulary();
+        updateAutomationStatus();
 
-        document.getElementById("save-message").textContent =
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Email changed. Started fresh ✓";
+
     } else {
+
         await loadVocabulary();
 
-        document.getElementById("save-message").textContent =
+        document.getElementById(
+            "status-message"
+        ).textContent =
             "Settings saved ✓";
     }
 }
 
 
 function getTodayIndia() {
+
     return new Intl.DateTimeFormat(
         "en-CA",
         {
@@ -191,6 +235,7 @@ function getTodayIndia() {
 
 
 function getIndiaDate(dateValue) {
+
     if (!dateValue) {
         return null;
     }
@@ -203,95 +248,255 @@ function getIndiaDate(dateValue) {
             month: "2-digit",
             day: "2-digit"
         }
-    ).format(new Date(dateValue));
+    ).format(
+        new Date(dateValue)
+    );
 }
 
 
 function updateDashboard() {
-    const today = getTodayIndia();
 
-    const todayVocabulary = vocabulary.filter(word => {
-        return getIndiaDate(word.generated_at) === today;
-    });
+    const today =
+        getTodayIndia();
 
-    document.getElementById("words-learned").textContent =
+
+    const todayVocabulary =
+        vocabulary.filter(word => {
+
+            return (
+                getIndiaDate(
+                    word.generated_at
+                ) === today
+            );
+
+        });
+
+
+    document.getElementById(
+        "words-learned"
+    ).textContent =
         vocabulary.length;
 
-    document.getElementById("words-today").textContent =
+
+    document.getElementById(
+        "words-today"
+    ).textContent =
         todayVocabulary.length;
 
+
     if (vocabulary.length > 0) {
-        document.getElementById("last-run").textContent =
-            formatDate(vocabulary[0].generated_at);
+
+        document.getElementById(
+            "latest-word"
+        ).textContent =
+            vocabulary[0].word || "None";
+
     } else {
-        document.getElementById("last-run").textContent =
+
+        document.getElementById(
+            "latest-word"
+        ).textContent =
+            "None";
+    }
+}
+
+
+function updateAutomationStatus() {
+
+    const statusText =
+        document.getElementById(
+            "automation-status"
+        );
+
+    const statusDot =
+        document.getElementById(
+            "status-dot"
+        );
+
+    const lastRun =
+        document.getElementById(
+            "automation-last-run"
+        );
+
+    const lastWord =
+        document.getElementById(
+            "last-word"
+        );
+
+
+    if (
+        !statusText ||
+        !statusDot ||
+        !lastRun ||
+        !lastWord
+    ) {
+        return;
+    }
+
+
+    if (
+        settings &&
+        settings.automation_started === true
+    ) {
+
+        statusText.textContent =
+            "Active";
+
+        statusDot.classList.remove(
+            "waiting",
+            "error"
+        );
+
+        statusDot.classList.add(
+            "active"
+        );
+
+    } else {
+
+        statusText.textContent =
+            "Waiting";
+
+        statusDot.classList.remove(
+            "active",
+            "error"
+        );
+
+        statusDot.classList.add(
+            "waiting"
+        );
+    }
+
+
+    if (vocabulary.length > 0) {
+
+        const latestWord =
+            vocabulary[0];
+
+
+        lastWord.textContent =
+            latestWord.word || "None";
+
+
+        lastRun.textContent =
+            formatDate(
+                latestWord.generated_at
+            );
+
+    } else {
+
+        lastWord.textContent =
+            "None";
+
+        lastRun.textContent =
             "Never";
     }
 }
 
 
 function renderVocabulary() {
+
     const todayContainer =
-        document.getElementById("today-vocabulary");
+        document.getElementById(
+            "today-vocabulary"
+        );
 
     const previousContainer =
-        document.getElementById("previous-vocabulary");
-
-    const today = getTodayIndia();
-
-    const todayVocabulary = vocabulary.filter(word => {
-        return getIndiaDate(word.generated_at) === today;
-    });
-
-    const previousVocabulary = vocabulary.filter(word => {
-        return getIndiaDate(word.generated_at) !== today;
-    });
+        document.getElementById(
+            "previous-vocabulary"
+        );
 
 
-    if (todayVocabulary.length === 0) {
+    const today =
+        getTodayIndia();
+
+
+    const todayVocabulary =
+        vocabulary.filter(word => {
+
+            return (
+                getIndiaDate(
+                    word.generated_at
+                ) === today
+            );
+
+        });
+
+
+    const previousVocabulary =
+        vocabulary.filter(word => {
+
+            return (
+                getIndiaDate(
+                    word.generated_at
+                ) !== today
+            );
+
+        });
+
+
+    if (
+        todayVocabulary.length === 0
+    ) {
+
         todayContainer.innerHTML = `
             <p class="empty-message">
                 No vocabulary available yet.
             </p>
         `;
+
     } else {
+
         todayContainer.innerHTML =
             todayVocabulary
-                .map(createVocabularyCard)
+                .map(
+                    createVocabularyCard
+                )
                 .join("");
     }
 
 
-    if (previousVocabulary.length === 0) {
+    if (
+        previousVocabulary.length === 0
+    ) {
+
         previousContainer.innerHTML = `
             <p class="empty-message">
                 No previous vocabulary available.
             </p>
         `;
+
     } else {
+
         previousContainer.innerHTML =
             previousVocabulary
-                .map(createVocabularyCard)
+                .map(
+                    createVocabularyCard
+                )
                 .join("");
     }
 }
 
 
 function createVocabularyCard(word) {
+
     return `
         <div class="vocabulary-card">
 
             <div class="word-header">
 
                 <h3>
-                    ${escapeHtml(word.word || "")}
+                    ${escapeHtml(
+                        word.word || ""
+                    )}
                 </h3>
 
                 ${
                     word.language
                         ? `
                             <span>
-                                ${escapeHtml(word.language)}
+                                ${escapeHtml(
+                                    word.language
+                                )}
                             </span>
                           `
                         : ""
@@ -400,7 +605,9 @@ function createVocabularyCard(word) {
 
 
             <div class="vocabulary-date">
-                ${formatDate(word.generated_at)}
+                ${formatDate(
+                    word.generated_at
+                )}
             </div>
 
         </div>
@@ -409,11 +616,14 @@ function createVocabularyCard(word) {
 
 
 function formatDate(dateValue) {
+
     if (!dateValue) {
         return "Unknown";
     }
 
-    return new Date(dateValue).toLocaleString(
+    return new Date(
+        dateValue
+    ).toLocaleString(
         "en-IN",
         {
             timeZone: "Asia/Kolkata",
@@ -428,129 +638,49 @@ function formatDate(dateValue) {
 
 
 function escapeHtml(value) {
+
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
 document
-    .getElementById("save-settings")
+    .getElementById(
+        "save-settings"
+    )
     .addEventListener(
         "click",
         saveSettings
     );
 
-    async function loadAutomationStatus() {
 
-    const statusText = document.getElementById("automation-status");
-    const statusDot = document.getElementById("status-dot");
-    const lastRun = document.getElementById("last-run");
-    const lastWord = document.getElementById("last-word");
+async function initializeDashboard() {
 
-    if (!statusText || !statusDot || !lastRun || !lastWord) {
-        return;
-    }
+    await loadSettings();
 
-    try {
+    await loadVocabulary();
 
-        const { data: settingsData, error: settingsError } = await db
-            .from("settings")
-            .select("automation_started")
-            .eq("id", 1)
-            .single();
-
-        if (settingsError) {
-            throw settingsError;
-        }
-
-        const { data: vocabularyData, error: vocabularyError } = await db
-            .from("vocabulary")
-            .select("word, generated_at, email_sent")
-            .order("generated_at", { ascending: false })
-            .limit(1);
-
-        if (vocabularyError) {
-            throw vocabularyError;
-        }
-
-        const latestWord = vocabularyData && vocabularyData.length > 0
-            ? vocabularyData[0]
-            : null;
-
-        if (settingsData && settingsData.automation_started) {
-
-            statusText.textContent = "Active";
-
-            statusDot.classList.remove(
-                "waiting",
-                "error"
-            );
-
-            statusDot.classList.add("active");
-
-        } else {
-
-            statusText.textContent = "Waiting";
-
-            statusDot.classList.remove(
-                "active",
-                "error"
-            );
-
-            statusDot.classList.add("waiting");
-        }
-
-        if (latestWord) {
-
-            lastWord.textContent = latestWord.word;
-
-            const date = new Date(
-                latestWord.generated_at
-            );
-
-            lastRun.textContent = date.toLocaleString(
-                "en-IN",
-                {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            );
-
-        } else {
-
-            lastWord.textContent = "None";
-            lastRun.textContent = "Never";
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            "Automation status error:",
-            error
-        );
-
-        statusText.textContent = "Unable to check";
-
-        statusDot.classList.remove(
-            "active",
-            "waiting"
-        );
-
-        statusDot.classList.add("error");
-
-        lastRun.textContent = "Unavailable";
-        lastWord.textContent = "Unavailable";
-    }
+    updateAutomationStatus();
 }
 
 
-loadSettings();
-loadVocabulary();
-loadAutomationStatus();
+initializeDashboard();

@@ -44,13 +44,17 @@ LearnLangWords/
 ## 📸 Screenshots
 
 ### Dashboard
+<img width="1079" height="778" alt="image" src="https://github.com/user-attachments/assets/9f297f7f-7fa9-4ab1-b269-3d7ab6c15fd2" />
 
 
 
 ### Vocabulary Section
+<img width="1077" height="694" alt="image" src="https://github.com/user-attachments/assets/23a59756-e709-4b58-bc75-3fcf1af5964a" />
+
 
 
 ### Vocabulary Email
+<img width="1919" height="994" alt="image" src="https://github.com/user-attachments/assets/0f44aebe-a308-4d9b-99b9-6f96af637ea2" />
 
 
 

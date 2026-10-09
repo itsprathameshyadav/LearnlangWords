@@ -8,21 +8,19 @@
     <title>LearnLangWords</title>
 
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-    <main class="container">
+    <div class="container">
 
         <header>
             <h1>LearnLangWords</h1>
             <p>Build your vocabulary, one word at a time.</p>
         </header>
+
 
         <section class="settings-card">
 
@@ -31,7 +29,10 @@
             <div class="form-grid">
 
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">
+                        Email
+                    </label>
+
                     <input
                         type="email"
                         id="email"
@@ -39,51 +40,134 @@
                     >
                 </div>
 
+
                 <div class="form-group">
-                    <label for="language">Learn</label>
+                    <label for="language">
+                        Learn
+                    </label>
+
                     <select id="language">
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Spanish">Spanish</option>
-                        <option value="French">French</option>
-                        <option value="German">German</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Portuguese">Portuguese</option>
-                        <option value="Japanese">Japanese</option>
+
+                        <option value="English">
+                            English
+                        </option>
+
+                        <option value="Hindi">
+                            Hindi
+                        </option>
+
+                        <option value="Spanish">
+                            Spanish
+                        </option>
+
+                        <option value="French">
+                            French
+                        </option>
+
+                        <option value="German">
+                            German
+                        </option>
+
+                        <option value="Italian">
+                            Italian
+                        </option>
+
+                        <option value="Portuguese">
+                            Portuguese
+                        </option>
+
+                        <option value="Japanese">
+                            Japanese
+                        </option>
+
                     </select>
                 </div>
 
+
                 <div class="form-group">
-                    <label for="learn-in">Learn in</label>
+                    <label for="learn-in">
+                        Learn in
+                    </label>
+
                     <select id="learn-in">
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Spanish">Spanish</option>
-                        <option value="French">French</option>
-                        <option value="German">German</option>
-                        <option value="Italian">Italian</option>
-                        <option value="Portuguese">Portuguese</option>
-                        <option value="Japanese">Japanese</option>
+
+                        <option value="English">
+                            English
+                        </option>
+
+                        <option value="Hindi">
+                            Hindi
+                        </option>
+
+                        <option value="Spanish">
+                            Spanish
+                        </option>
+
+                        <option value="French">
+                            French
+                        </option>
+
+                        <option value="German">
+                            German
+                        </option>
+
+                        <option value="Italian">
+                            Italian
+                        </option>
+
+                        <option value="Portuguese">
+                            Portuguese
+                        </option>
+
+                        <option value="Japanese">
+                            Japanese
+                        </option>
+
                     </select>
                 </div>
 
+
                 <div class="form-group">
-                    <label for="words-per-day">Words per day</label>
+                    <label for="words-per-day">
+                        Words per day
+                    </label>
+
                     <select id="words-per-day">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="5">5</option>
-                        <option value="10">10</option>
+
+                        <option value="1">
+                            1
+                        </option>
+
+                        <option value="2">
+                            2
+                        </option>
+
+                        <option value="3">
+                            3
+                        </option>
+
+                        <option value="5">
+                            5
+                        </option>
+
+                        <option value="10">
+                            10
+                        </option>
+
                     </select>
                 </div>
 
             </div>
 
-            <button id="save-settings">Save Settings</button>
+
+            <button id="save-settings">
+                Save Settings
+            </button>
+
             <p id="status-message"></p>
 
         </section>
+
 
         <section class="stats">
 
@@ -104,37 +188,69 @@
 
         </section>
 
-        <section class="automation-card">
-            <h2>Automation Status</h2>
 
-            <div class="automation-status">
-                <div class="status-container">
-                    <span class="status-dot" id="status-dot"></span>
-                    <span id="automation-status">Checking...</span>
-                </div>
-            </div>
-        </section>
+        <section class="automation-card">
+
+            <section class="automation-card">
+
+    <h2>Automation Status</h2>
+
+    <div class="automation-status">
+
+        <div class="status-container">
+
+            <span
+                class="status-dot"
+                id="status-dot"
+            ></span>
+
+            <span id="automation-status">
+                Checking...
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
 
         <section class="vocabulary-section">
+
             <h2>Today's Vocabulary</h2>
 
             <div id="today-vocabulary">
-                <p class="empty-message">No vocabulary available yet.</p>
+
+                <p class="empty-message">
+                    No vocabulary available yet.
+                </p>
+
             </div>
+
         </section>
 
+
         <section class="vocabulary-section">
+
             <h2>Previous Vocabulary</h2>
 
             <div id="previous-vocabulary">
-                <p class="empty-message">No previous vocabulary available.</p>
+
+                <p class="empty-message">
+                    No previous vocabulary available.
+                </p>
+
             </div>
+
         </section>
 
-    </main>
+    </div>
+
 
     <script src="script.js"></script>
 
 </body>
+
 </html>
 
+make the interface more appealing. dont add anything extra just reposition and recolour. give me the code
